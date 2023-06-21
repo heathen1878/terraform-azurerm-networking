@@ -1,5 +1,5 @@
 output "network_watcher" {
-  value = azurerm_network_watcher.network_watcher
+  value = try(azurerm_network_watcher.network_watcher, null)
 }
 
 output "virtual_network" {

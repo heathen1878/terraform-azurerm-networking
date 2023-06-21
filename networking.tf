@@ -71,3 +71,4 @@ resource "azurerm_subnet" "subnet" {
   service_endpoints                             = each.value.service_endpoints
   service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 }
+

@@ -64,3 +64,30 @@ variable "subnets" {
     }
   ))
 }
+
+variable "route_tables" {
+  description = "A map of route tables"
+  type = map(object(
+    {
+      disable_bgp_route_propagation = bool
+      name                          = string
+      location                      = string
+      resource_group_name           = string
+      tags                          = map(any)
+    }
+  ))
+}
+
+variable "routes" {
+  description = "A map of routes and their association"
+  type = map(object(
+    {
+      address_prefix         = string
+      name                   = string
+      next_hop_in_ip_address = string
+      next_hop_type          = string
+      resource_group_name    = string
+      route_table_key        = string
+    }
+  ))
+}

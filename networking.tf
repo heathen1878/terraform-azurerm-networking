@@ -72,3 +72,23 @@ resource "azurerm_subnet" "subnet" {
   service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 }
 
+resource "azurerm_route_table" "route_table" {
+  for_each = var.route_tables
+
+  name                          = each.value.name
+  location                      = each.value.location
+  resource_group_name           = each.value.resource_group_name
+  disable_bgp_route_propagation = each.value.disable_bgp_route_propagation
+  tags                          = each.value.tags
+}
+
+resource "azurerm_route" "route" {
+  for_each = var.routes
+
+  name                   = each.value.name
+  resource_group_name    = each.value.resource_group_name
+  route_table_name       = azurerm_route_table.route_table[each.value.route_table_key].name
+  address_prefix         = each.value.address_prefix
+  next_hop_type          = each.value.next_hop_type
+  next_hop_in_ip_address = each.value.next_hop_type == "VirtualAppliance" ? each.value.next_hop_in_ip_address : null
+}

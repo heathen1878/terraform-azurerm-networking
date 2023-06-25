@@ -72,6 +72,63 @@ resource "azurerm_subnet" "subnet" {
   service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
 }
 
+resource "azurerm_public_ip" "public_ip_address" {
+  for_each = var.public_ip_addresses
+
+  name                    = each.value.name
+  resource_group_name     = each.value.resource_group_name
+  location                = each.value.location
+  allocation_method       = each.value.allocation_method
+  ddos_protection_mode    = each.value.ddos_protection_mode
+  ddos_protection_plan_id = each.value.ddos_protection_plan_id
+  domain_name_label       = each.value.domain_name_label
+  edge_zone               = each.value.edge_zone
+  idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
+  ip_tags                 = each.value.ip_tags
+  public_ip_prefix_id     = each.value.public_ip_prefix_id
+  reverse_fqdn            = each.value.reverse_fqdn
+  sku                     = each.value.sku
+  sku_tier                = each.value.sku_tier
+  zones                   = each.value.zones
+  tags                    = each.value.tags
+
+  lifecycle {
+    create_before_destroy = true
+  }
+}
+
+resource "azurerm_nat_gateway" "nat_gateway" {
+  for_each = var.nat_gateways
+
+  name                    = each.value.name
+  resource_group_name     = each.value.resource_group_name
+  location                = each.value.location
+  idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
+  sku_name                = each.value.sku_name
+  tags = merge(each.value.tags, {
+    associated_ip_address = azurerm_public_ip.public_ip_address[each.key].name
+  })
+  zones = each.value.zones
+}
+
+resource "azurerm_subnet_nat_gateway_association" "nat_gateway" {
+  for_each = {
+    for key, value in var.subnets : key => value
+    if value.enable_nat_gateway == true
+  }
+
+  subnet_id      = azurerm_subnet.subnet[each.key].id
+  nat_gateway_id = azurerm_nat_gateway.nat_gateway[each.nat_gateway_key].id
+}
+
+resource "azurerm_nat_gateway_public_ip_association" "nat_gateway" {
+  for_each = var.nat_gateways
+
+  nat_gateway_id       = azurerm_nat_gateway.nat_gateway[each.key].id
+  public_ip_address_id = azurerm_public_ip.public_ip_address[each.key].id
+
+}
+
 resource "azurerm_route_table" "route_table" {
   for_each = var.route_tables
 
@@ -90,5 +147,5 @@ resource "azurerm_route" "route" {
   route_table_name       = azurerm_route_table.route_table[each.value.route_table_key].name
   address_prefix         = each.value.address_prefix
   next_hop_type          = each.value.next_hop_type
-  next_hop_in_ip_address = each.value.next_hop_type == "VirtualAppliance" ? each.value.next_hop_in_ip_address : null
+  next_hop_in_ip_address = each.value.next_hop_type
 }

@@ -61,6 +61,48 @@ variable "subnets" {
       private_link_service_network_policies_enabled = optional(bool, true)
       service_endpoints                             = optional(list(string))
       service_endpoint_policy_ids                   = optional(list(string))
+      enable_nat_gateway                            = bool
+      nat_gateway_key                               = string
+    }
+  ))
+}
+
+variable "public_ip_addresses" {
+  description = "A map of public IP addresses"
+  type = map(object(
+    {
+      allocation_method       = string
+      domain_name_label       = string
+      ddos_protection_mode    = string
+      ddos_protection_plan_id = optional(string)
+      edge_zone               = optional(string)
+      idle_timeout_in_minutes = number
+      ip_version              = string
+      ip_tags                 = optional(map(any), {})
+      location                = string
+      name                    = string
+      public_ip_prefix_id     = optional(string)
+      resource_group_name     = string
+      reverse_fqdn            = string
+      sku                     = string
+      sku_tier                = string
+      tags                    = map(any)
+      zones                   = list(string)
+    }
+  ))
+}
+
+variable "nat_gateways" {
+  description = "A map of NAT gateways"
+  type = map(object(
+    {
+      idle_timeout_in_minutes = number
+      location                = string
+      name                    = string
+      resource_group_name     = string
+      sku_name                = string
+      tags                    = map(any)
+      zones                   = list(string)
     }
   ))
 }

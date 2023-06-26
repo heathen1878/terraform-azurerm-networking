@@ -125,4 +125,25 @@ nsgs = {
     }
 }
 
+nsg_rules = {
+    name                         = "nsg_rule_name"
+    priority                     = 100
+    protocol                     = "Tcp / Udp ..."
+    direction                    = "Inbound / Outbound"
+    access                       = "Allow / Deny"
+    description                  = "rule description"
+    source_port_range            = "port or *"
+    source_port_ranges           = [ports or *]
+    destination_port_range       = "port or *"
+    destination_port_ranges      = [ports or *]
+    source_address_prefix        = "CIDR, * ot service tag"
+    source_address_prefixes      = [CIDR]
+    destination_address_prefix   = "CIDR, * ot service tag"
+    destination_address_prefixes = [CIDR]
+    key                          = "nsg_key"
+}
 
+nsg_association = {
+    nsg_name = "nsg_name"
+    key      = "nsg_key / subnet_key"
+}

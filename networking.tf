@@ -36,13 +36,31 @@ resource "azurerm_virtual_network" "virtual_network" {
 
   lifecycle {
     ignore_changes = [
-      dns_servers # DNS is managed by terraform-azure-networking/dns
+      dns_servers # DNS is managed by heathen1878/dns/azurerm
     ]
   }
 
   depends_on = [
     azurerm_network_watcher.network_watcher
   ]
+}
+
+resource "azurerm_virtual_network_peering" "peer_1_to_peer_2" {
+  for_each = var.virtual_network_peers
+
+  name                      = format("%s-to-%s", each.value.peer_1_name, azurerm_virtual_network.virtual_network[each.value.peer_2_id].name)
+  resource_group_name       = each.value.peer_1_rg
+  virtual_network_name      = each.value.peer_1_name
+  remote_virtual_network_id = azurerm_virtual_network.virtual_network[each.value.peer_2_id].id
+}
+
+resource "azurerm_virtual_network_peering" "peer_2_to_peer_1" {
+  for_each = var.virtual_network_peers
+
+  name                      = format("%s-to-%s", azurerm_virtual_network.virtual_network[each.value.peer_2_id].name, each.value.peer_1_name)
+  resource_group_name       = azurerm_virtual_network.virtual_network[each.value.peer_2_id].resource_group_name
+  virtual_network_name      = azurerm_virtual_network.virtual_network[each.value.peer_2_id].name
+  remote_virtual_network_id = each.value.peer_1_id
 }
 
 resource "azurerm_subnet" "subnet" {
@@ -118,7 +136,7 @@ resource "azurerm_subnet_nat_gateway_association" "nat_gateway" {
   }
 
   subnet_id      = azurerm_subnet.subnet[each.key].id
-  nat_gateway_id = azurerm_nat_gateway.nat_gateway[each.nat_gateway_key].id
+  nat_gateway_id = azurerm_nat_gateway.nat_gateway[each.value.nat_gateway_key].id
 }
 
 resource "azurerm_nat_gateway_public_ip_association" "nat_gateway" {
@@ -148,4 +166,45 @@ resource "azurerm_route" "route" {
   address_prefix         = each.value.address_prefix
   next_hop_type          = each.value.next_hop_type
   next_hop_in_ip_address = each.value.next_hop_type
+}
+
+resource "azurerm_network_security_group" "nsg" {
+  for_each = var.nsgs
+
+  name                = each.value.name
+  location            = each.value.location
+  resource_group_name = each.value.resource_group_name
+  tags                = each.value.tags
+}
+
+resource "azurerm_network_security_rule" "nsg_rules" {
+  for_each = var.nsg_rules
+
+  # required
+  name                        = each.value.name
+  resource_group_name         = azurerm_network_security_group.nsg[each.value.key].resource_group_name
+  network_security_group_name = azurerm_network_security_group.nsg[each.value.key].name
+
+  priority  = each.value.priority
+  protocol  = each.value.protocol
+  direction = each.value.direction
+  access    = each.value.access
+
+  # optional
+  description                  = each.value.description
+  source_port_range            = each.value.source_port_range
+  source_port_ranges           = each.value.source_port_ranges
+  destination_port_range       = each.value.destination_port_range
+  destination_port_ranges      = each.value.destination_port_ranges
+  source_address_prefix        = each.value.source_address_prefix
+  source_address_prefixes      = each.value.source_address_prefixes
+  destination_address_prefix   = each.value.destination_address_prefix
+  destination_address_prefixes = each.value.destination_address_prefixes
+}
+
+resource "azurerm_subnet_network_security_group_association" "nsg_to_subnet" {
+  for_each = var.nsg_association
+
+  subnet_id                 = azurerm_subnet.subnet[each.value.key].id
+  network_security_group_id = azurerm_network_security_group.nsg[each.value.key].id
 }

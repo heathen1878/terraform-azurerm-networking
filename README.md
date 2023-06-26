@@ -6,9 +6,11 @@ Creates or gets the network watcher for the region and subscription depending on
 
 ## Virtual Network
 
-Creates or gets the network watcher for the region and subscription depending on whether the use_existing key value is true or false. See example [usage](https://raw.githubusercontent.com/heathen1878/terraform-azurerm-networking/main/terraform.tfvars.example).
+Creates one or more virtual networks and returns the virtual network attributes for other modules to consume. See example [usage](https://raw.githubusercontent.com/heathen1878/terraform-azurerm-networking/main/terraform.tfvars.example).
 
 ## Subnets
+
+Creates one or more subnets and returns the subnet attributes for other modules to consume. See example [usage](https://raw.githubusercontent.com/heathen1878/terraform-azurerm-networking/main/terraform.tfvars.example).
 
 ## Public IP addresses
 

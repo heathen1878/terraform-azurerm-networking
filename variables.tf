@@ -37,6 +37,18 @@ variable "virtual_networks" {
   ))
 }
 
+variable "virtual_network_peers" {
+  description = "A map of virtual network peerings"
+  type = map(object(
+    {
+      peer_1_id   = string
+      peer_1_rg   = string
+      peer_1_name = string
+      peer_2_id   = string
+    }
+  ))
+}
+
 variable "subnets" {
   description = "A map of subnets to assign to a vNet"
   type = map(object(
@@ -55,8 +67,7 @@ variable "subnets" {
             }
           ))
         }
-        )
-      )
+      ))
       private_endpoint_network_policies_enabled     = optional(bool, true)
       private_link_service_network_policies_enabled = optional(bool, true)
       service_endpoints                             = optional(list(string))
@@ -130,6 +141,51 @@ variable "routes" {
       next_hop_type          = string
       resource_group_name    = string
       route_table_key        = string
+    }
+  ))
+}
+
+variable "nsgs" {
+  description = "A map of NSGs"
+  type = map(object(
+    {
+      name                = string
+      location            = string
+      resource_group_name = string
+      tags                = map(any)
+    }
+  ))
+}
+
+variable "nsg_rules" {
+  description = "A map of NSG rules"
+  type = map(object(
+    {
+      name                         = string
+      priority                     = number
+      protocol                     = string
+      direction                    = string
+      access                       = string
+      description                  = string
+      source_port_range            = string
+      source_port_ranges           = list(string)
+      destination_port_range       = string
+      destination_port_ranges      = list(string)
+      source_address_prefix        = string
+      source_address_prefixes      = list(string)
+      destination_address_prefix   = string
+      destination_address_prefixes = list(string)
+      key                          = string
+    }
+  ))
+}
+
+variable "nsg_association" {
+  description = "A map of NSGs and the subnet to associate with"
+  type = map(object(
+    {
+      nsg_name = string
+      key      = string
     }
   ))
 }

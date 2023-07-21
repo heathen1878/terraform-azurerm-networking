@@ -9,3 +9,11 @@ output "virtual_network" {
 output "subnet" {
   value = azurerm_subnet.subnet
 }
+
+output "public_ip_address" {
+  value = azurerm_public_ip.public_ip_address
+}
+
+output "network_security_group" {
+  value = azurerm_network_security_group.nsg
+}

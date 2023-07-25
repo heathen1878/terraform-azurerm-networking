@@ -45,8 +45,11 @@ resource "azurerm_virtual_network" "virtual_network" {
   ]
 }
 
-resource "azurerm_virtual_network_peering" "peer_1_to_peer_2" {
-  for_each = var.virtual_network_peers
+resource "azurerm_virtual_network_peering" "global_to_environment_same_subscription" {
+  for_each = {
+    for key, value in var.virtual_network_peers : key => value
+    if value.cross_subscription == false
+  }
 
   name                      = format("%s-to-%s", each.value.peer_1_name, azurerm_virtual_network.virtual_network[each.value.peer_2_id].name)
   resource_group_name       = each.value.peer_1_rg
@@ -54,7 +57,20 @@ resource "azurerm_virtual_network_peering" "peer_1_to_peer_2" {
   remote_virtual_network_id = azurerm_virtual_network.virtual_network[each.value.peer_2_id].id
 }
 
-resource "azurerm_virtual_network_peering" "peer_2_to_peer_1" {
+resource "azurerm_virtual_network_peering" "global_to_environment_different_subscription" {
+  for_each = {
+    for key, value in var.virtual_network_peers : key => value
+    if value.cross_subscription == true
+  }
+
+  provider                  = azurerm.global
+  name                      = format("%s-to-%s", each.value.peer_1_name, azurerm_virtual_network.virtual_network[each.value.peer_2_id].name)
+  resource_group_name       = each.value.peer_1_rg
+  virtual_network_name      = each.value.peer_1_name
+  remote_virtual_network_id = azurerm_virtual_network.virtual_network[each.value.peer_2_id].id
+}
+
+resource "azurerm_virtual_network_peering" "environment_to_global" {
   for_each = var.virtual_network_peers
 
   name                      = format("%s-to-%s", azurerm_virtual_network.virtual_network[each.value.peer_2_id].name, each.value.peer_1_name)

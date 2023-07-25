@@ -14,6 +14,10 @@ output "public_ip_address" {
   value = azurerm_public_ip.public_ip_address
 }
 
+output "azure_nat_gateway" {
+  value = azurerm_nat_gateway.nat_gateway
+}
+
 output "network_security_group" {
   value = azurerm_network_security_group.nsg
 }

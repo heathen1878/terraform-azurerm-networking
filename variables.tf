@@ -41,10 +41,11 @@ variable "virtual_network_peers" {
   description = "A map of virtual network peerings"
   type = map(object(
     {
-      peer_1_id   = string
-      peer_1_rg   = string
-      peer_1_name = string
-      peer_2_id   = string
+      cross_subscription = bool
+      peer_1_id          = string
+      peer_1_rg          = string
+      peer_1_name        = string
+      peer_2_id          = string
     }
   ))
 }
@@ -188,4 +189,9 @@ variable "nsg_association" {
       key      = string
     }
   ))
+}
+
+variable "management_subscription" {
+  description = "The subscription to use for the AzureRM provider alias. It's only used if cross_subscription vNet peers are required."
+  type        = string
 }

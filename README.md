@@ -1,5 +1,37 @@
 # Networking module
 
+## Tests
+
+[![Terratest](...)]
+
+## Security
+
+[![Dependabot](https://img.shields.io/badge/dependabot-active-brightgreen?style=flat-square&logo=dependabot)](...)
+
+## Examples
+
+[...](./examples/.../README.md)
+
+## Usage
+
+```shell
+# Typically nested within another module to manage IAM
+module "networking" {
+
+    source ="heathen1878/networking/azurerm"
+    version = "1.0.0"
+
+    # Three mandatory parameters
+}
+```
+
+## Version 1.0.0
+
+
+
+
+
+
 ## Network Watcher
 
 Creates or gets the network watcher for the region and subscription depending on whether the use_existing key value is true or false. See example [usage](https://raw.githubusercontent.com/heathen1878/terraform-azurerm-networking/main/terraform.tfvars.example).

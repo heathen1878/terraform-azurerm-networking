@@ -1,42 +1,21 @@
-variable "network_watcher" {
-  description = "A map of network watcher configuration"
+variable "bgp_community" {
+  description = "The BGP community attribute"
+  default     = null
+  type        = string
+}
+
+variable "ddos_protection_plan" {
+  description = "value"
+  default     = {}
   type = map(object(
     {
-      name                = string
-      resource_group_name = string
-      location            = string
-      tags                = map(any)
-      use_existing        = bool
+      id     = string
+      enable = bool
     }
   ))
 }
 
-variable "virtual_networks" {
-  description = "A map of virtual networks"
-  type = map(object(
-    {
-      name                = string
-      resource_group_name = string
-      location            = string
-      address_space       = list(string)
-      dns_servers         = optional(list(string), [])
-      bgp_community       = optional(string)
-      ddos_protection_plan = optional(object(
-        {
-          id     = string
-          enable = bool
-        }
-        ), {
-        id     = ""
-        enable = false
-      })
-      edge_zone               = optional(string)
-      flow_timeout_in_minutes = optional(number, 30)
-      tags                    = map(any)
-    }
-  ))
-}
-
+<<<<<<< Updated upstream
 variable "virtual_network_peers" {
   description = "A map of virtual network peerings"
   type = map(object(
@@ -48,17 +27,38 @@ variable "virtual_network_peers" {
       peer_2_id          = string
     }
   ))
+=======
+variable "location" {
+  description = "The location where resources in this module should reside"
+  type        = string
+}
+
+variable "use_existing_network_watcher" {
+  description = "Should the existing network watcher be used?"
+  default     = true
+  type        = bool
+}
+
+variable "network_watcher_name" {
+  description = "The name of the network watcher"
+  default     = null
+  type        = string
+}
+
+variable "resource_group_name" {
+  description = "The resource group where the resources in this module should reside"
+  type        = string
+>>>>>>> Stashed changes
 }
 
 variable "subnets" {
   description = "A map of subnets to assign to a vNet"
+  default     = {}
   type = map(object(
     {
-      name                = string
-      resource_group_name = string
-      virtual_network_key = string
-      address_prefixes    = list(string)
-      delegation = map(object(
+      name             = string
+      address_prefixes = list(string)
+      delegation = optional(map(object(
         {
           name = optional(string)
           service_delegation = optional(object(
@@ -68,19 +68,70 @@ variable "subnets" {
             }
           ))
         }
-      ))
+      )), {})
       private_endpoint_network_policies_enabled     = optional(bool, true)
       private_link_service_network_policies_enabled = optional(bool, true)
       service_endpoints                             = optional(list(string))
       service_endpoint_policy_ids                   = optional(list(string))
-      enable_nat_gateway                            = bool
-      nat_gateway_key                               = string
+      enable_nat_gateway                            = optional(bool, false)
+      nat_gateway_key                               = optional(string, null)
+    }
+  ))
+}
+
+variable "tags" {
+  description = "A map of tags that should be assigned to resources in this module"
+  default     = {}
+  type        = map(any)
+}
+
+variable "virtual_network_name" {
+  description = "The name of the virtual network"
+  type        = string
+}
+
+variable "virtual_network_address_space" {
+  description = "A list of IP address space to assign to the virtual network"
+  default = [
+    "192.168.0.0/16"
+  ]
+  type = list(string)
+}
+
+variable "virtual_network_dns_servers" {
+  description = "The DNS servers to assign to the virtual network - default is to use Azure DNS"
+  default     = []
+  type        = list(string)
+}
+
+variable "virtual_network_edge_zone" {
+  description = "The edge zone in the Azure region where the virtual network should reside"
+  default     = null
+  type        = string
+}
+
+variable "virtual_network_flow_timeout_in_minutes" {
+  description = "The flow timeout for infra VM flow connection tracking in minutes"
+  default     = 4
+  type        = number
+}
+
+variable "virtual_network_peers" {
+  description = "A map of virtual network peerings"
+  default     = {}
+  type = map(object(
+    {
+      peer_1_id   = string
+      peer_1_rg   = string
+      peer_1_name = string
+      peer_2_id   = string
     }
   ))
 }
 
 variable "public_ip_addresses" {
   description = "A map of public IP addresses"
+  default     = {}
   type = map(object(
     {
       allocation_method       = string
@@ -106,6 +157,7 @@ variable "public_ip_addresses" {
 
 variable "nat_gateways" {
   description = "A map of NAT gateways"
+  default     = {}
   type = map(object(
     {
       idle_timeout_in_minutes = number
@@ -121,6 +173,7 @@ variable "nat_gateways" {
 
 variable "route_tables" {
   description = "A map of route tables"
+  default     = {}
   type = map(object(
     {
       disable_bgp_route_propagation = bool
@@ -134,6 +187,7 @@ variable "route_tables" {
 
 variable "routes" {
   description = "A map of routes and their association"
+  default     = {}
   type = map(object(
     {
       address_prefix         = string
@@ -148,6 +202,7 @@ variable "routes" {
 
 variable "nsgs" {
   description = "A map of NSGs"
+  default     = {}
   type = map(object(
     {
       name                = string
@@ -160,6 +215,7 @@ variable "nsgs" {
 
 variable "nsg_rules" {
   description = "A map of NSG rules"
+  default     = {}
   type = map(object(
     {
       name                         = string
@@ -183,6 +239,7 @@ variable "nsg_rules" {
 
 variable "nsg_association" {
   description = "A map of NSGs and the subnet to associate with"
+  default     = {}
   type = map(object(
     {
       nsg_name = string

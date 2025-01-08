@@ -1,0 +1,63 @@
+name: Terratest
+on:
+  pull_request: 
+    branches:
+      - '*'
+    paths:
+      - '*'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    name: Run Terratest
+    
+    defaults:
+      run:
+        working-directory: ./tests
+    
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Authenticate with Azure
+      uses: azure/login@v2
+      with:
+        creds: '{"clientId": "${{ secrets.ARM_CLIENT_ID }}", "clientSecret": "${{ secrets.ARM_CLIENT_SECRET }}", "tenantId": "${{ secrets.ARM_TENANT_ID }}", "subscriptionId": "${{ vars.ARM_SUBSCRIPTION_ID }}"}'
+    
+    - name: install terraform
+      uses: hashicorp/setup-terraform@v3
+      with:
+        terraform_version: ${{ vars.TERRAFORM_VERSION }}
+
+    - name: Run tests
+      id: tests
+      run: |
+
+        # Setup Go environment
+        GOPATH="$HOME/go"
+        export GOPATH
+
+        PATH=$PATH:$GOPATH/bin
+        export PATH
+        
+        # export variables as environment variables
+        export ARM_CLIENT_OBJECT_ID=${{ secrets.ARM_CLIENT_OBJECT_ID }}
+        export ARM_CLIENT_ID=${{ secrets.ARM_CLIENT_ID }}
+        export ARM_CLIENT_SECRET=${{ secrets.ARM_CLIENT_SECRET }}
+        export ARM_TENANT_ID=${{ secrets.ARM_TENANT_ID }}
+        export ARM_SUBSCRIPTION_ID=${{ vars.ARM_SUBSCRIPTION_ID }}
+        export ARM_USE_AZUREAD=true
+
+        # Install Go Junit reporter
+        go install github.com/jstemmer/go-junit-report/v2@latest
+
+        # Run Go tests
+        go test -v 2>&1 ./... | go-junit-report -set-exit-code > report.xml
+    - name: Upload test summary
+      uses: test-summary/action@v1
+      with:
+        paths: |
+          tests/report.xml
+      if: always()
+      

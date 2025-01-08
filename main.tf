@@ -1,3 +1,4 @@
+<<<<<<< Updated upstream
 resource "azurerm_network_watcher" "network_watcher" {
   for_each = {
     for key, value in var.network_watcher : key => value
@@ -34,6 +35,37 @@ resource "azurerm_virtual_network" "virtual_network" {
   flow_timeout_in_minutes = each.value.flow_timeout_in_minutes
   tags                    = each.value.tags
 
+=======
+resource "azurerm_network_watcher" "this" {
+  for_each = var.use_existing_network_watcher == true ? {} : { "existing_network_watcher" = "false" }
+
+  name                = var.network_watcher_name
+  resource_group_name = var.resource_group_name
+  location            = var.location
+  tags                = var.tags
+}
+
+resource "azurerm_virtual_network" "this" {
+  name                    = var.virtual_network_name
+  resource_group_name     = var.resource_group_name
+  location                = var.location
+  address_space           = var.virtual_network_address_space
+  dns_servers             = var.virtual_network_dns_servers
+  bgp_community           = var.bgp_community
+  edge_zone               = var.virtual_network_edge_zone
+  flow_timeout_in_minutes = var.virtual_network_flow_timeout_in_minutes
+  tags                    = var.tags
+
+  dynamic "ddos_protection_plan" {
+    for_each = var.ddos_protection_plan
+
+    content {
+      id     = ddos_protection_plan.value.id
+      enable = ddos_protection_plan.value.enable
+    }
+  }
+
+>>>>>>> Stashed changes
   lifecycle {
     ignore_changes = [
       dns_servers # DNS is managed by heathen1878/dns/azurerm
@@ -41,6 +73,7 @@ resource "azurerm_virtual_network" "virtual_network" {
   }
 
   depends_on = [
+<<<<<<< Updated upstream
     azurerm_network_watcher.network_watcher
   ]
 }
@@ -86,6 +119,23 @@ resource "azurerm_subnet" "subnet" {
   resource_group_name  = each.value.resource_group_name
   virtual_network_name = azurerm_virtual_network.virtual_network[each.value.virtual_network_key].name
   address_prefixes     = each.value.address_prefixes
+=======
+    azurerm_network_watcher.this
+  ]
+}
+
+resource "azurerm_subnet" "this" {
+  for_each = var.subnets
+
+  name                                          = each.value.name
+  resource_group_name                           = var.resource_group_name
+  virtual_network_name                          = azurerm_virtual_network.this.name
+  address_prefixes                              = each.value.address_prefixes
+  private_endpoint_network_policies     = each.value.private_endpoint_network_policies_enabled
+  private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
+  service_endpoints                             = each.value.service_endpoints
+  service_endpoint_policy_ids                   = each.value.service_endpoint_policy_ids
+>>>>>>> Stashed changes
 
   dynamic "delegation" {
     for_each = each.value.delegation
@@ -99,6 +149,7 @@ resource "azurerm_subnet" "subnet" {
       }
     }
   }
+<<<<<<< Updated upstream
 
   private_endpoint_network_policies_enabled     = each.value.private_endpoint_network_policies_enabled
   private_link_service_network_policies_enabled = each.value.private_link_service_network_policies_enabled
@@ -107,6 +158,11 @@ resource "azurerm_subnet" "subnet" {
 }
 
 resource "azurerm_public_ip" "public_ip_address" {
+=======
+}
+
+resource "azurerm_public_ip" "this" {
+>>>>>>> Stashed changes
   for_each = var.public_ip_addresses
 
   name                    = each.value.name
@@ -131,7 +187,11 @@ resource "azurerm_public_ip" "public_ip_address" {
   }
 }
 
+<<<<<<< Updated upstream
 resource "azurerm_nat_gateway" "nat_gateway" {
+=======
+resource "azurerm_nat_gateway" "this" {
+>>>>>>> Stashed changes
   for_each = var.nat_gateways
 
   name                    = each.value.name
@@ -139,9 +199,18 @@ resource "azurerm_nat_gateway" "nat_gateway" {
   location                = each.value.location
   idle_timeout_in_minutes = each.value.idle_timeout_in_minutes
   sku_name                = each.value.sku_name
+<<<<<<< Updated upstream
   tags = merge(each.value.tags, {
     associated_ip_address = azurerm_public_ip.public_ip_address[each.key].name
   })
+=======
+  tags = merge(
+    each.value.tags,
+    {
+      associated_ip_address = azurerm_public_ip.public_ip_address[each.key].name
+    }
+  )
+>>>>>>> Stashed changes
   zones = each.value.zones
 }
 
@@ -160,6 +229,7 @@ resource "azurerm_nat_gateway_public_ip_association" "nat_gateway" {
 
   nat_gateway_id       = azurerm_nat_gateway.nat_gateway[each.key].id
   public_ip_address_id = azurerm_public_ip.public_ip_address[each.key].id
+<<<<<<< Updated upstream
 
 }
 
@@ -223,4 +293,6 @@ resource "azurerm_subnet_network_security_group_association" "nsg_to_subnet" {
 
   subnet_id                 = azurerm_subnet.subnet[each.value.key].id
   network_security_group_id = azurerm_network_security_group.nsg[each.value.key].id
+=======
+>>>>>>> Stashed changes
 }
